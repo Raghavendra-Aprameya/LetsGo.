@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User{
+
+  userid Int @id @default(autoincrement())
+  Firstname String
+  LastName String?
+  email String @unique
+  password String
+  phone String @unique
+  role String? @default("user")
+  verified Boolean? @default(false)
+  
+
+  OTP OTP[]//optional by default
+  bookings  Booking[]  // One user can have multiple bookings
+}
+model OTP{
+  id Int @id @default(autoincrement())
+  otp Int 
+  userid Int 
+  user User @relation(fields: [userid], references: [userid])
+  createdAt DateTime @default(now())
+
+}
+model Trip{
+  id Int @id @default(autoincrement())
+  name String 
+  description Json?
+  price Int
+  date  DateTime[] @db.Date
+  //inclusion ,exclusion,dos,donts
+
+  //created at for auto deletion
+  createdAt DateTime @default(now())
+  bookings    Booking[]  // One trip can have multiple bookings
+
+}
+//booking
+model Booking {
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  
+  // Relationships
+  userId      Int
+  user        User      @relation(fields: [userId], references: [userid])
+  
+  tripId      Int
+  trip        Trip      @relation(fields: [tripId], references: [id])
+  
+  // Booking details
+  bookingDate DateTime  // Date when the booking is for
+  status      String    @default("pending") // pending, confirmed, cancelled, etc.
+  
+  paymentId String  
+  orderId String
+ 
+  
+  // Additional info
+  noTicket Int 
+  // passengers  Json[]  // Details about passengers (e.g., names, ages)
+  totalAmount Int  // Optional notes or special requests
+}
+
+//reviews
